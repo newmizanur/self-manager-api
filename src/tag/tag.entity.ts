@@ -5,7 +5,10 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToMany,
+  Unique,
+  Index,
 } from 'typeorm';
+import { TagRepository } from './tag.repository';
 
 @Entity()
 export class Tag extends BaseEntity {
@@ -16,7 +19,10 @@ export class Tag extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  //Todo: Make it Unique
+  @Column({
+    unique: true,
+  })
   name: string;
 
   @ManyToMany(

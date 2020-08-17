@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTopicDTO } from 'src/topic/create-topic.dto';
+import { In } from 'typeorm';
 import { Tag } from './tag.entity';
 
 import { TagRepository } from './tag.repository';
@@ -16,12 +17,18 @@ export class TagService {
     return this.tagRepository.create(createTagDTO);
   }
 
-  public async createBatchOrUpdate(names: string[]): Promise<Tag[]> {
+  public async upsertBatch(names: string[]): Promise<Tag[]> {
     if (!names.length) {
       throw new BadRequestException('No tag');
     }
     const tags = names.map((name: string) => new Tag(name));
-    //Todo: Upsert
-    return this.tagRepository.save(tags);
+    await this.tagRepository
+      .createQueryBuilder()
+      .insert()
+      .values(tags)
+      .orUpdate({ conflict_target: ['id', 'name'], overwrite: ['name'] }) //Not works without overwrite
+      .execute();
+
+    return this.tagRepository.find({ where: { name: In(tags) } });
   }
 }

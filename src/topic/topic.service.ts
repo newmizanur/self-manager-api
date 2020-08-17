@@ -20,10 +20,9 @@ export class TopicService {
     //Todo: Save topic once if standard
     const topic = await this.topicRepository.createTopic(createTopicDTO);
     if (createTopicDTO.tags.length) {
-      const tags = await this.tagService.createBatchOrUpdate(
-        createTopicDTO.tags,
-      );
-      (topic.tags || []).push(...tags);
+      const tags = await this.tagService.upsertBatch(createTopicDTO.tags);
+      console.log(tags);
+      topic.tags = tags;
       await topic.save();
     }
     return topic;
